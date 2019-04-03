@@ -52,16 +52,29 @@ def populateTables(scoretable,backtrack):
     for x in range(1,xlen):
         for y in range(1,ylen):
             if not (x==1 and y==1):
-                top=scoretable[x][y-1]+indel
-                left=scoretable[x-1][y]+indel
-                diag=scoretable[x-1][y-1]+matchscore(x,y,scoretable)
-                scoretable[x][y]=max(top,left,diag, key=checkint) #OPTIMISING: MAYBE REMOVE KEY AND CHECK IN IF STATEMENTS BELOW
+                checklist=[]
+                if type(scoretable[x][y-1]) == int:
+                    top=scoretable[x][y-1]+indel
+                    checklist.append(top)
+                else:
+                    top=None
+                if type(scoretable[x - 1][y]) == int:
+                    left=scoretable[x-1][y]+indel
+                    checklist.append(left)
+                else:
+                    left=None
+                if type(scoretable[x-1][y-1])== int:
+                    diag=scoretable[x-1][y-1]+matchscore(x,y,scoretable)
+                    checklist.append(diag)
+                else:
+                    diag=None
+                scoretable[x][y]=max(checklist) #OPTIMISING: MAYBE REMOVE KEY AND CHECK IN IF STATEMENTS BELOW
                 if scoretable[x][y]==top:
-                    backtrack[x][y].append("U") #MAYBE NEEDS TO BE =backtrack[x][y]+"U"
+                    backtrack[x][y]=backtrack[x][y]+"U" #MAYBE NEEDS TO BE =backtrack[x][y]+"U"
                 if scoretable[x][y]==left:
-                    backtrack[x][y].append("L")
+                    backtrack[x][y]=backtrack[x][y]+"L"
                 if scoretable[x][y]==diag:
-                    backtrack[x][y].append("D")
+                    backtrack[x][y]=backtrack[x][y]+"D"
 
 def findAlignment(backtrack):
     xlen=len(backtrack) #Length of table in x axis
@@ -70,6 +83,7 @@ def findAlignment(backtrack):
     currpoint=[xlen-1, ylen-1]
     alignment = [""]*2
     while currpoint!=[1,1]:
+        print(currpoint)
         xval = scoretable[currpoint[0]][0]
         yval = scoretable[0][currpoint[1]]
         currval=backtrack[currpoint[0]][currpoint[1]]
@@ -85,7 +99,7 @@ def findAlignment(backtrack):
             currpoint=[currpoint[0]-1,currpoint[1]]
             alignment[0]=xval+alignment[0]
             alignment[1]="-"+alignment[1]
-        return alignment
+    return alignment
 
 
 # ------------------------------------------------------------
@@ -127,8 +141,9 @@ start = time.time()
 
 # YOUR CODE GOES HERE ----------------------------------------
 scoretable=initTable(seq1,seq2)
-backtrack=scoretable.copy()
+backtrack=initTable(seq1,seq2)
 populateTables(scoretable,backtrack)
+print(scoretable)
 best_score=scoretable[len(scoretable)-1][len(scoretable[0])-1]
 best_alignment=findAlignment(backtrack)
 
