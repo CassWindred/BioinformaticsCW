@@ -1,4 +1,6 @@
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 def findClosest(matrix):
     closestcoord=[0]*2
@@ -24,30 +26,32 @@ def WPGMA(filename):
         print(i, end="")
         matrix.append(i.split(" "))
         matrix[-1][-1]=matrix[-1][-1].rstrip('\n') #Remove /n at end
-    print(matrix)
     matrix=np.array(matrix)
-    print(matrix)
 
+    G = nx.Graph()
 
-
+    print()
     complete=False
     while complete==False:
         sidelen = matrix.shape[0]
         closest=findClosest(matrix)
-        print(closest)
         xletter=matrix[closest[0]][0] #Find the species in the x axis
         yletter = matrix[0][closest[1]] #Find the species in the y axis
-        newname=xletter+yletter #Find the combined name of the species
-        print(newname)
+        newname=yletter+xletter #Find the combined name of the species
 
         newrow=[None]#*sidelen-2
         newrow[0]=newname
 
+        G.add_node(xletter)
+        G.add_node(yletter)
+        G.add_node(newname)
+        G.add_edge(xletter, newname)
+        G.add_edge(yletter,newname)
+
         for i in range(1,sidelen):
             if i not in closest:
-                newval=(int(matrix[closest[0]][i])+int(matrix[closest[1]][i]))/2 #Find value for new spot
+                newval=(float(matrix[closest[0]][i])+float(matrix[closest[1]][i]))/2 #Find value for new spot
                 newrow.append(newval)
-                print(newval)
         newrow=np.array(newrow)
         #Remove rows and collumns
         matrix = np.delete(matrix, closest[1],0)
@@ -56,16 +60,21 @@ def WPGMA(filename):
         matrix = np.delete(matrix, closest[0], 1)
         #Add new row and collumn
         matrix = np.vstack([matrix,newrow])
-        print(matrix)
-        print(newrow)
+
         newrow = np.append(newrow,0.0)
-        print(newrow)
-        newrow = np.flip(newrow)
-        print(newrow)
-        matrix = np.hstack([matrix, newrow])
-
-        complete=True
 
 
 
-WPGMA("matrix1.txt")
+        matrix = np.column_stack([matrix, newrow])
+        print(matrix)
+        if matrix.shape[0] <=2:
+            complete=True
+
+    print("Results:")
+    print(str(G))
+    nx.draw(G, with_labels=True, font_weight='bold')
+    plt.show()
+
+
+
+WPGMA("matrix2(1).txt")
