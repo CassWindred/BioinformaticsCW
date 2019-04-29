@@ -19,6 +19,44 @@ def findClosest(matrix):
 
 
 
+def addnodes(G, node1, node2, parentnode, distance):
+
+    distance=float(distance)
+    G.add_node(node1)
+    G.add_node(node2)
+    G.add_node(parentnode, height=distance/2)
+    G.add_edge(node1, parentnode)
+    G.add_edge(node2, parentnode)
+
+
+    #Position the nodes
+    if len(node1)==1:
+        G.graph["pos"][node1]=(G.graph["nodecount"],1)
+        G.graph["nodecount"]+=1
+        G.node[node1]["height"]=0
+
+        G.graph["nodelabels"][node1]=node1
+
+    if len(node2)==1:
+        G.graph["pos"][node2] = (G.graph["nodecount"], 1)
+        G.graph["nodecount"]+=1
+        G.node[node2]["height"] = 0
+
+        G.graph["nodelabels"][node2] = node2
+
+
+
+    parentxpos=(G.graph["pos"][node1][0]+G.graph["pos"][node2][0])/2 #Get the average x-coord of the child nodes
+    G.graph["pos"][parentnode]=(parentxpos,len(parentnode))
+
+    #Find edge weights
+    G.graph["edgeweights"][node1,parentnode]=(distance/2)-G.node[node1]["height"]
+    G.graph["edgeweights"][node2, parentnode] = (distance / 2) - G.node[node2]["height"]
+
+
+
+
+
 def WPGMA(filename):
     f = open(filename, "r")
     matrix=[]
@@ -28,7 +66,8 @@ def WPGMA(filename):
         matrix[-1][-1]=matrix[-1][-1].rstrip('\n') #Remove /n at end
     matrix=np.array(matrix)
 
-    G = nx.Graph()
+    #Create graph with parameters for positioning nodes
+    G = nx.Graph(nodecount=0, pos={}, edgeweights={}, nodelabels={})
 
     print()
     complete=False
@@ -42,11 +81,7 @@ def WPGMA(filename):
         newrow=[None]#*sidelen-2
         newrow[0]=newname
 
-        G.add_node(xletter)
-        G.add_node(yletter)
-        G.add_node(newname)
-        G.add_edge(xletter, newname)
-        G.add_edge(yletter,newname)
+        addnodes(G, xletter, yletter, newname, matrix[closest[0]][closest[1]])
 
         for i in range(1,sidelen):
             if i not in closest:
@@ -72,9 +107,11 @@ def WPGMA(filename):
 
     print("Results:")
     print(str(G))
-    nx.draw(G, with_labels=True, font_weight='bold')
+    nx.draw(G, G.graph["pos"], with_labels=False, font_weight='bold')
+    nx.draw_networkx_edge_labels(G, G.graph["pos"], edge_labels=G.graph["edgeweights"])
+    nx.draw_networkx_labels(G, G.graph["pos"], labels=G.graph["nodelabels"])
     plt.show()
 
 
 
-WPGMA("matrix2(1).txt")
+WPGMA("matrix-wikipedia.txt")
