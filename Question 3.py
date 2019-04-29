@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def findClosest(matrix):
+def findClosest(matrix): #Finds the smallest value in the graph that isnt along the central line, and returns its coordinates
     closestcoord=[0]*2
     minvalue=None
     sidelen=matrix.shape[0]
@@ -20,8 +20,9 @@ def findClosest(matrix):
 
 
 def addnodes(G, node1, node2, parentnode, distance):
-
     distance=float(distance)
+
+    #Add the new nodes
     G.add_node(node1)
     G.add_node(node2)
     G.add_node(parentnode, height=distance/2)
@@ -105,13 +106,12 @@ def WPGMA(filename):
         if matrix.shape[0] <=2:
             complete=True
 
-    print("Results:")
-    print(str(G))
+    #Draw the graph then save it to file
     nx.draw(G, G.graph["pos"], with_labels=False, font_weight='bold')
-    nx.draw_networkx_edge_labels(G, G.graph["pos"], edge_labels=G.graph["edgeweights"])
-    nx.draw_networkx_labels(G, G.graph["pos"], labels=G.graph["nodelabels"])
-    plt.show()
+    nx.draw_networkx_edge_labels(G, G.graph["pos"], edge_labels=G.graph["edgeweights"]) #Add the edge weights as labels
+    nx.draw_networkx_labels(G, G.graph["pos"], labels=G.graph["nodelabels"]) #Add only the base node labels
+    plt.savefig(filename[:-4]+".png") #Cut off the .txt of the filename and append .png, then save to that file
 
 
 
-WPGMA("matrix-wikipedia.txt")
+WPGMA("matrix2.txt")
